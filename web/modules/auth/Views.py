@@ -29,6 +29,4 @@ def login():
             return jsonify({'login': True, 'token': encoded_jwt(result_user), 'uid': str(result_user['_id']),
                             'email': result_user['email']})
 
-    "return jsonify({'login': False, 'msg': 'wrong username or password'}), HTTPStatus.BAD_REQUEST"""
-
-    return jsonify({'login': True})
+    return jsonify({'login': False, 'msg': 'wrong username or password'}), HTTPStatus.BAD_REQUEST
