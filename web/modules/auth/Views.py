@@ -3,8 +3,9 @@ from http import HTTPStatus
 import mongoengine
 import logging
 
-import config as config
-from .utils import check_hashed_password, encoded_jwt, decode_cookie
+from web import config
+from web.modules.auth.Models import User
+from .utils import check_hashed_password, encoded_jwt
 
 authBlueprint = Blueprint('auth', __name__)
 
@@ -18,7 +19,7 @@ def login():
     user = data.get('user', '')
     password = data.get('password', '')
 
-    result_user = users_ao.users.find_one({'email': user})
+    result_user = User.objects({'email': user}).first()
 
     if result_user:
         if check_hashed_password(password, result_user['password']):
@@ -26,7 +27,8 @@ def login():
                 return jsonify({'login': False, 'msg': 'User not confirmed'})
 
             return jsonify({'login': True, 'token': encoded_jwt(result_user), 'uid': str(result_user['_id']),
-                            'email': result_user['email'], 'currentPlanLevel': l_p['currentPlanLevel'],
-                            'names': result_user['name'] + ' ' + result_user['lastname']})
+                            'email': result_user['email']})
 
-    return jsonify({'login': False, 'msg': 'wrong username or password'}), HTTPStatus.BAD_REQUEST
+    "return jsonify({'login': False, 'msg': 'wrong username or password'}), HTTPStatus.BAD_REQUEST"""
+
+    return jsonify({'login': True})
