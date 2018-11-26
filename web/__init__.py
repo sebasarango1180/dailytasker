@@ -6,7 +6,7 @@ from web.modules.tasks.Views import tasksBlueprint
 
 from web import config
 
-app = Flask(__name__, static_folder=config.STATIC_PATH)
+app = Flask(__name__, static_folder=config.STATIC_PATH, templates_folder=config.TEMPLATES_PATH)
 
 app.config.from_object('web.config')
 
