@@ -5,10 +5,10 @@ DEBUG = os.environ.get('DEBUG', True)
 HOST = os.environ.get('HOST', '0.0.0.0')
 PORT = os.environ.get('PORT', 5000)
 
-#   URI for aux components
+#   URI for aux components-----------------------------------------------------------------------------
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_PATH = ROOT_DIR + '/web/static'
-TEMPLATES_PATH = '/web/templates'
+STATIC_PATH = ROOT_DIR + '/static'
+TEMPLATES_PATH = ROOT_DIR + '/templates'
 
 #   MongoDB credentials and connection------------------------------------------------------------------
 DB_HOST = 'ds139781.mlab.com'
