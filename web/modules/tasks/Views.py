@@ -11,67 +11,88 @@ tasksBlueprint = Blueprint('tasks', __name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@tasksBlueprint.route('/', methods=['GET'])
-def get_all():
+@tasksBlueprint.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@tasksBlueprint.route('/<task_id>', methods=['PUT', 'DELETE'])
+def process_tasks(task_id=None):
     """
-    Retrieves an array containing all the tasks
-    """
-    task_list = list()
-    for task in Task.objects:
-            task_data = {
-                    'id': task.id,
-                    'description': task.description,
-                    'status': task.status,
-                    'due_date': task.due_date,
-                    'creation_date': task.creation_date,
-                    'completion_date': task.completion_date
-            }
-            task_list.append(task_data)
+    Performs RESTful operations over Task objects.
 
-    return jsonify({'list':task_list})
+    GET: retrieves a list of current tasks.
+    POST: Creates a new task instance.
+    PUT: Updates an existing task - input: (task_id, **kwargs)
+    DELETE: Deletes an existing instance of Task. - input: (task_id)
 
-@tasksBlueprint.route('/', methods=['POST'])
-def create_task():
-    """
-    Creates a task
     """
 
-    if request.method == 'POST':
+    if request.method == 'GET':
+        
+        try:
+        
+                task_list = list()
+                for task in Task.objects().order_by('creation_date'):
+                        task_data = {
+                                'id': str(task.id),
+                                'description': task.description,
+                                'status': task.status,
+                                'due_date': str(task.due_date),
+                                'creation_date': str(task.creation_date),
+                                'completion_date': str(task.completion_date)
+                        }
+                        task_list.append(task_data)
+
+                return jsonify({'list':task_list})
+
+        except Exception as e:
+                return jsonify({'error': str(e)}), HTTPStatus.BAD_REQUEST
+
+
+    elif request.method == 'POST':
+
         data = request.get_json() if request.get_json() else dict()
 
-        if type(data.get('due_date')) == str:
-                data['due_date'] == datetime.strptime(data.get('due_date'), '%Y-%m-%d')
+        try:
 
-        if not data.get('description'):
-                return jsonify({'error': 'No description added'}), HTTPStatus.BAD_REQUEST
+                if type(data.get('due_date')) == str:
+                        data['due_date'] == datetime.strptime(data.get('due_date'), '%Y-%m-%d')
 
-        task = Task(**data).save()
+                if not data.get('description'):
+                        return jsonify({'error': 'No description added'}), HTTPStatus.BAD_REQUEST
 
-        return jsonify({'task_id': str(task.id)}), HTTPStatus.CREATED
+                task = Task(**data).save()
 
-@tasksBlueprint.route('/edit-task', methods=['POST'])
-def edit_task():
-    """
-    Edits a task
-    """
+                return jsonify({'task_id': str(task.id)}), HTTPStatus.CREATED
 
-    if request.method == 'POST':
+        except Exception as e:
+                return jsonify({'error': str(e)}), HTTPStatus.BAD_REQUEST
+
+
+    elif request.method == 'PUT':
+
         data = request.get_json() if request.get_json() else dict()
+        t_id = task_id if task_id else request.get_json().get('task_id')
 
-        task = data #   Eventually stored in DB
+        try:
 
-        return jsonify({'task_id': task.id}), HTTPStatus.OK
+                task = Task.objects(id=ObjectId(t_id)).modify(set__status= data.get('status'), upsert=False)
+
+                if task:
+                        return jsonify({'task_id': str(t_id)}), HTTPStatus.OK
+                else:
+                        return jsonify({'error': 'The document could not be edited as it was not found in the DB'}), HTTPStatus.BAD_REQUEST
+
+        except Exception as e:
+                return jsonify({'error': str(e)}), HTTPStatus.BAD_REQUEST
 
 
-@tasksBlueprint.route('/delete-task', methods=['POST'])
-def delete_task():
-    """
-    Deletes a task
-    """
+    elif request.method == 'DELETE':
 
-    if request.method == 'POST':
         data = request.get_json() if request.get_json() else dict()
+        t_id = task_id if task_id else request.get_json().get('task_id')
 
-        task = data.get('id') #   Eventually deleted in DB
+        try:
+                task = Task.objects(id=ObjectId(t_id)).first()
+                task.delete()
+                return jsonify({'task_id': t_id}), 204
 
-        return jsonify({'task_id': task.id}), HTTPStatus.OK
+        except Exception as e:
+                return jsonify({'error': str(e)}), HTTPStatus.BAD_REQUEST

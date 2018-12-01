@@ -19,5 +19,5 @@ class Task(me.Document):
 
     meta = {
         'strict': False,
-        'collection': 'tasks'
+        'collection': 'task'
     }

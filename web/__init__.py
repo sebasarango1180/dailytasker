@@ -8,7 +8,7 @@ from web import config as config
 
 app = Flask(__name__.split('.')[0], static_folder=config.STATIC_PATH, template_folder=config.TEMPLATES_PATH)
 
-app.config.from_pyfile('config.py')
+app.config.from_pyfile('./config.py')
 
 # Mongo connection
 connect(**config.buildMongoConnectionArgs())
